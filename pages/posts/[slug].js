@@ -8,12 +8,14 @@ import Header from '../../components/header'
 import PostHeader from '../../components/post-header'
 import SectionSeparator from '../../components/section-separator'
 import Layout from '../../components/layout'
-import { getAllPostsWithSlug, getPostAndMorePosts } from '../../lib/api'
+import { getAllPostsWithSlug, getPostAndMorePosts, getPostTest } from '../../lib/api'
 import PostTitle from '../../components/post-title'
 import { CMS_NAME } from '../../lib/constants'
 
 export default function Post({ post, morePosts, preview }) {
   const router = useRouter()
+
+  console.log(post)
 
   if (!router.isFallback && !post) {
     return <ErrorPage statusCode={404} />
@@ -30,9 +32,9 @@ export default function Post({ post, morePosts, preview }) {
             <article>
               <Head>
                 <title>
-                  {post.title} | Next.js Blog Example with {CMS_NAME}
+                  {post[0].fields.title} | Next.js Blog Example with {CMS_NAME}
                 </title>
-                <meta property="og:image" content={post.coverImage.url} />
+                <meta property="og:image" content={"https://insert-hero-image-here.com/photo.jpg"} />
               </Head>
               <PostHeader
                 title={post.title}
@@ -40,6 +42,7 @@ export default function Post({ post, morePosts, preview }) {
                 date={post.date}
                 author={post.author}
               />
+              {post[0].fields.title}
               <PostBody content={post.content} />
             </article>
             <SectionSeparator />
@@ -54,12 +57,12 @@ export default function Post({ post, morePosts, preview }) {
 }
 
 export async function getStaticProps({ params, preview = false }) {
-  const data = await getPostAndMorePosts(params.slug, preview)
+  const data = await getPostTest(params.slug, preview)
 
   return {
     props: {
       preview,
-      post: data?.post ?? null,
+      post: data ?? null,
       morePosts: data?.morePosts ?? null,
     },
   }
@@ -67,8 +70,9 @@ export async function getStaticProps({ params, preview = false }) {
 
 export async function getStaticPaths() {
   const allPosts = await getAllPostsWithSlug()
+
   return {
-    paths: allPosts?.map(({ slug }) => `/posts/${slug}`) ?? [],
+    paths: allPosts.map(slug => `/posts/${slug.fields.slug}`) ?? [],
     fallback: true,
   }
 }
